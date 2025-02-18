@@ -4,7 +4,6 @@ import requests
 from neo4j import GraphDatabase
 import os 
 
-# ====== Configuration ======
 NEO4J_URI = "bolt://localhost:7687"
 NEO4J_USER = "neo4j"
 NEO4J_PASSWORD = "password"

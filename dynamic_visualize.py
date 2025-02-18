@@ -208,7 +208,7 @@ def main():
         print("No alumni nodes found in the database.")
         return
     
-    cap_on_visualization = 20
+    cap_on_visualization = 60
     print(f"Visualizing {cap_on_visualization} alumni nodes...")
     visualize_alumnis(nodes[:cap_on_visualization])
 
