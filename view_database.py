@@ -12,7 +12,7 @@ def fetch_all_alumnis():
     Returns a list of dictionaries representing alumni properties.
     """
     driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
-    query = "MATCH (s:alumni) RETURN s"
+    query = "MATCH (s:Student) RETURN s"
     alumnis = []
     with driver.session() as session:
         result = session.run(query)

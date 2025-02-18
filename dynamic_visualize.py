@@ -22,7 +22,7 @@ def fetch_alumnis():
     Returns a list of dictionaries representing alumni properties.
     """
     driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
-    query = "MATCH (s:alumni) RETURN s"
+    query = "MATCH (s:Student) RETURN s"
     nodes = []
     with driver.session() as session:
         result = session.run(query)
@@ -42,7 +42,8 @@ def build_profile_description(alumni):
     for key, value in alumni.items():
         if value is not None:
             str_val = str(value).strip()
-            if str_val and str_val.lower() != "null":
+            # DO NOT include name or email in the profile description
+            if key.lower() not in ["name", "email"] and str_val:
                 parts.append(f"{key}: {str_val}")
     return " ".join(parts)
 
