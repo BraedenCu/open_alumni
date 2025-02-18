@@ -1,5 +1,13 @@
 # Natural Language Alumni Search
 
+## Demo
+
+launch frontend: npm run deploy
+
+launch API: python app.py
+
+sample prompt: find me other yale graduates from the class of 2020 that work on public policy in washington dc
+
 ## Structure of this repository
 
 inital_alumni_population --> popualte the neo4j database (assuming docker instance of neo4j host is running) using currently just the provided excel class lists from the Yale Office of Career Strategy

@@ -60,7 +60,7 @@ def main():
     graph_db = GraphDB(NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD)
 
     # For testing, limit the number of alumni processed
-    max_alumni = 100
+    max_alumni = 1000
 
     # Iterate through each row of the DataFrame
     for index, row in df.iterrows():

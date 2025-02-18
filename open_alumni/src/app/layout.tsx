@@ -13,9 +13,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <header style={{ padding: "20px", textAlign: "center" }}>
-          <h1>Alumni Graph Visualization</h1>
-        </header>
         <main>{children}</main>
       </body>
     </html>
