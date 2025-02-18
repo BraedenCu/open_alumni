@@ -74,7 +74,7 @@ def launch_query(nl_query):
 
 if __name__ == "__main__":
     # For testing from the command line
-    query = input("Enter your query: ")
+    query = input("Search Alumni: ")
     matches = launch_query(query)
     print("Top Matches:")
     for match in matches:

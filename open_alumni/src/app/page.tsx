@@ -43,7 +43,7 @@ export default function Home() {
   return (
     <div style={{ padding: '20px' }}>
       <form onSubmit={handleSubmit}>
-        <label htmlFor="query">Enter your query:</label>
+        <label htmlFor="query">Search Alumni:</label>
         <input
           type="text"
           id="query"
@@ -60,6 +60,16 @@ export default function Home() {
           <pre>{result}</pre>
         </div>
       )}
+      <div style={{ marginBottom: '40px' }}>
+        <h1>Alumni Graph Visualization</h1>
+        <iframe
+          src="/neo4j_alumnis.html"
+          width="100%"
+          height="750px"
+          style={{ border: 'none' }}
+          title="Alumni Graph Visualization"
+        />
+      </div>
     </div>
   );
 }
