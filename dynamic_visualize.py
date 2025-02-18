@@ -16,13 +16,13 @@ NEO4J_PASSWORD = "password"
 # Initialize the Sentence Transformer model
 model = SentenceTransformer('all-MiniLM-L6-v2')
 
-def fetch_students():
+def fetch_alumnis():
     """
-    Connect to the Neo4j database and fetch all nodes with the label 'Student'.
-    Returns a list of dictionaries representing student properties.
+    Connect to the Neo4j database and fetch all nodes with the label 'alumni'.
+    Returns a list of dictionaries representing alumni properties.
     """
     driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
-    query = "MATCH (s:Student) RETURN s"
+    query = "MATCH (s:alumni) RETURN s"
     nodes = []
     with driver.session() as session:
         result = session.run(query)
@@ -32,43 +32,43 @@ def fetch_students():
     driver.close()
     return nodes
 
-def build_profile_description(student):
+def build_profile_description(alumni):
     """
     Construct a full profile description by concatenating key-value pairs
     that are populated. Only include features whose values are not None,
     not empty (or whitespace), and not the literal string 'null' (case-insensitive).
     """
     parts = []
-    for key, value in student.items():
+    for key, value in alumni.items():
         if value is not None:
             str_val = str(value).strip()
             if str_val and str_val.lower() != "null":
                 parts.append(f"{key}: {str_val}")
     return " ".join(parts)
 
-def get_student_embeddings(students):
+def get_alumni_embeddings(alumnis):
     """
-    Compute embeddings for each student's full profile description.
+    Compute embeddings for each alumni's full profile description.
     Returns an array of embeddings.
     """
-    descriptions = [build_profile_description(s) for s in students]
+    descriptions = [build_profile_description(s) for s in alumnis]
     embeddings = model.encode(descriptions)
     return np.array(embeddings)
 
-def cluster_students(embeddings, eps=0.5, min_samples=1):
+def cluster_alumni(embeddings, eps=0.5, min_samples=1):
     """
-    Cluster student embeddings using DBSCAN with cosine distance.
+    Cluster alumni embeddings using DBSCAN with cosine distance.
     Returns an array of cluster labels.
     """
     clustering = DBSCAN(eps=eps, min_samples=min_samples, metric="cosine").fit(embeddings)
     return clustering.labels_
 
-def compute_similarity(student1, student2):
+def compute_similarity(alumni1, alumni2):
     """
-    Compute a dynamic similarity score between two students using text embeddings.
+    Compute a dynamic similarity score between two alumnis using text embeddings.
     """
-    desc1 = build_profile_description(student1)
-    desc2 = build_profile_description(student2)
+    desc1 = build_profile_description(alumni1)
+    desc2 = build_profile_description(alumni2)
     
     emb1 = model.encode(desc1)
     emb2 = model.encode(desc2)
@@ -76,16 +76,16 @@ def compute_similarity(student1, student2):
     cosine_sim = np.dot(emb1, emb2) / (np.linalg.norm(emb1) * np.linalg.norm(emb2))
     return float(cosine_sim)
 
-def visualize_students(nodes):
+def visualize_alumnis(nodes):
     """
-    Uses Pyvis to visualize student nodes along with edges connecting every pair of students.
+    Uses Pyvis to visualize alumni nodes along with edges connecting every pair of alumnis.
     Nodes are colored based on communities detected via the Louvain method. Each cluster is
     assigned a fixed center evenly distributed around a circle (like vertices of a polyhedron).
     Each node is placed near its cluster center (with a small random offset), and edges are added
     only if the normalized similarity is above a threshold. Moreover, the edge length is set inversely
     proportional to the normalized similarity score so that highly similar nodes are drawn closer together.
     """
-    print("Visualizing student nodes...")
+    print("Visualizing alumni nodes...")
 
     net = Network(height="750px", width="100%", notebook=False)
     net.barnes_hut()
@@ -96,8 +96,8 @@ def visualize_students(nodes):
         return
 
     # Compute embeddings and perform clustering (for later edge filtering, we still compute similarity)
-    embeddings = get_student_embeddings(nodes)
-    dbscan_labels = cluster_students(embeddings, eps=0.5, min_samples=1)
+    embeddings = get_alumni_embeddings(nodes)
+    dbscan_labels = cluster_alumni(embeddings, eps=0.5, min_samples=1)
 
     # Build a networkx graph with all nodes (without using spring layout for final positions).
     G = nx.Graph()
@@ -134,7 +134,7 @@ def visualize_students(nodes):
 
     print("Adding nodes and edges to the visualization...")
 
-    # Add each student as a node with a position near its cluster center.
+    # Add each alumni as a node with a position near its cluster center.
     for idx, node in enumerate(nodes):
         name = node.get("name")
         if not name:
@@ -198,18 +198,18 @@ def visualize_students(nodes):
       }
     }''')
     
-    net.show("./output/neo4j_students.html", notebook=False)
-    print("Visualization saved as 'neo4j_students.html'.")
+    net.show("./output/neo4j_alumnis.html", notebook=False)
+    print("Visualization saved as 'neo4j_alumnis.html'.")
 
 def main():
-    nodes = fetch_students()
+    nodes = fetch_alumnis()
     if not nodes:
-        print("No student nodes found in the database.")
+        print("No alumni nodes found in the database.")
         return
     
     cap_on_visualization = 20
-    print(f"Visualizing {cap_on_visualization} student nodes...")
-    visualize_students(nodes[:cap_on_visualization])
+    print(f"Visualizing {cap_on_visualization} alumni nodes...")
+    visualize_alumnis(nodes[:cap_on_visualization])
 
 if __name__ == "__main__":
     main()
