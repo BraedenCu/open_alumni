@@ -3,6 +3,7 @@ import json
 import numpy as np
 from neo4j import GraphDatabase
 from sentence_transformers import SentenceTransformer
+import faiss  # Facebook AI Similarity Search
 
 # ====== Neo4j Connection Configuration ======
 NEO4J_URI = "bolt://localhost:7687"
@@ -35,31 +36,66 @@ class GraphDB:
                     profiles.append(node)
         return profiles
 
-def cosine_similarity(vec1, vec2):
-    """Compute the cosine similarity between two vectors."""
-    return np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
+def get_alumni_embeddings(alumnis):
+    """
+    Compute embeddings for each alumni's full profile description.
+    Returns a NumPy array of normalized embeddings (float32).
+    """
+    # Build a description for each alumni.
+    descriptions = [build_profile_description(s) for s in alumnis]
+    embeddings = model.encode(descriptions)
+    # Normalize embeddings so that cosine similarity equals inner product.
+    norms = np.linalg.norm(embeddings, axis=1, keepdims=True)
+    embeddings = embeddings / norms
+    return np.array(embeddings).astype('float32')
+
+def build_profile_description(alumni):
+    """
+    Construct a full profile description by concatenating key-value pairs
+    that are populated. Exclude 'name' and 'email' fields.
+    """
+    parts = []
+    for key, value in alumni.items():
+        if value is not None:
+            str_val = str(value).strip()
+            if key.lower() not in ["name", "email"] and str_val and str_val.lower() != "null":
+                parts.append(f"{key}: {str_val}")
+    return " ".join(parts)
+
+def build_faiss_index(embeddings):
+    """
+    Build a FAISS index (using inner product) for the given normalized embeddings.
+    """
+    dim = embeddings.shape[1]
+    index = faiss.IndexFlatIP(dim)
+    index.add(embeddings)
+    return index
+
+def query_faiss_index(nl_query, alumni_profiles, index, top_n=5):
+    """
+    Given a natural language query, compute its embedding, and query the FAISS index.
+    Returns the top matching alumni as a list of 2-tuples (name, similarity score).
+    """
+    query_embedding = model.encode([nl_query])
+    # Normalize the query embedding.
+    query_embedding = query_embedding / np.linalg.norm(query_embedding, axis=1, keepdims=True)
+    query_embedding = query_embedding.astype('float32')
+    
+    distances, indices = index.search(query_embedding, top_n)
+    matches = []
+    for idx, score in zip(indices[0], distances[0]):
+        if idx < len(alumni_profiles):
+            name = alumni_profiles[idx].get("name", "Unknown")
+            matches.append((name, float(score)))
+    return matches
 
 def serve_profiles_with_embeddings(nl_query, alumni_profiles, top_n=5):
     """
-    Given a natural language query and a list of alumni profiles,
-    compute the cosine similarity between the query embedding and each alumni's
-    description embedding. Return the top matching alumni as a list of 2-tuples:
-    (name, similarity as float).
+    Use FAISS to retrieve the top matching alumni given a natural language query.
     """
-    # Compute the embedding for the query.
-    query_embedding = model.encode(nl_query)
-    matches = []
-    for profile in alumni_profiles:
-        description = profile.get("description", "")
-        if not description:
-            continue
-        emb = model.encode(description)
-        sim = float(cosine_similarity(query_embedding, emb))
-        matches.append((profile.get("name", "Unknown"), sim))
-    
-    # Sort matches by similarity descending.
-    matches = sorted(matches, key=lambda x: x[1], reverse=True)
-    return matches[:top_n]
+    embeddings = get_alumni_embeddings(alumni_profiles)
+    index = build_faiss_index(embeddings)
+    return query_faiss_index(nl_query, alumni_profiles, index, top_n)
 
 def launch_query(nl_query):
     db = GraphDB(NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD)
@@ -73,7 +109,6 @@ def launch_query(nl_query):
     return top_matches
 
 if __name__ == "__main__":
-    # For testing from the command line
     query = input("Search Alumni: ")
     matches = launch_query(query)
     print("Top Matches:")
