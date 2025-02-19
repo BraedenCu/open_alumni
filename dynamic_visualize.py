@@ -187,7 +187,7 @@ def visualize_alumnis(nodes):
       "edges": {
         "scaling": {
           "min": 2,
-          "max": 10,
+          "max": 30,
           "label": {
             "enabled": true
           }
@@ -199,8 +199,8 @@ def visualize_alumnis(nodes):
       }
     }''')
     
-    net.show("./output/neo4j_alumnis.html", notebook=False)
-    print("Visualization saved as 'neo4j_alumnis.html'.")
+    net.show("./output/alumni.html", notebook=False)
+    print("Visualization saved as 'alumni.html'.")
 
 def main():
     nodes = fetch_alumnis()
@@ -208,7 +208,7 @@ def main():
         print("No alumni nodes found in the database.")
         return
     
-    cap_on_visualization = 60
+    cap_on_visualization = 300
     print(f"Visualizing {cap_on_visualization} alumni nodes...")
     visualize_alumnis(nodes[:cap_on_visualization])
 

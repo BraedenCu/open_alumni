@@ -60,7 +60,7 @@ export default function Home() {
       {/* Graph Visualization Section */}
       <section style={{ marginBottom: "2rem", borderRadius: "8px", overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
         <iframe
-          src="/neo4j_alumnis.html"
+          src="/alumni_huge.html"
           width="100%"
           height="750px"
           style={{ border: "none" }}
