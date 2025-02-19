@@ -161,8 +161,7 @@ def visualize_alumnis(nodes):
             raw_sim = compute_similarity(nodes[i], nodes[j])
             edge_data.append((i, j, raw_sim))
     
-    # Normalize similarity scores using the known raw range (approximately 0.71 to 0.86) and amplify differences.
-    min_raw, max_raw = 0.71, 0.86 # Approximate range of raw similarity scores, TODO fix to a more algorithmic approach
+    # Normalize similarity scores using the known raw range 
     def normalize(sim):
         return sim ** 2
 
